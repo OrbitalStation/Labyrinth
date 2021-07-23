@@ -6,34 +6,48 @@ use crate::tile::*;
 
 // Public interface
 
-pub use types::SizeT;
+pub use types::Size;
 
-#[inline]
-pub fn new_level() {
-    unsafe { impls::new_level_impl() }
+pub fn init() {
+    load();
 }
 
 #[inline]
-pub fn width() -> SizeT {
+pub fn generate_new_level() {
+    unsafe { impls::generate_new_level_impl() }
+}
+
+#[inline]
+pub fn width() -> Size {
     unsafe { impls::width_impl() }
 }
 
 #[inline]
-pub fn height() -> SizeT {
+pub fn height() -> Size {
     unsafe { impls::height_impl() }
 }
 
 #[inline]
-pub fn set(x: SizeT, y: SizeT, value: TileType) {
+pub fn set(x: Size, y: Size, value: TileType) {
     unsafe { impls::set_impl(x, y, value) }
 }
 
 #[inline]
-pub fn get(x: SizeT, y: SizeT) -> TileType {
+pub fn get(x: Size, y: Size) -> TileType {
     unsafe { impls::get_impl(x, y) }
 }
 
 #[inline]
 pub fn is_updated() -> bool {
     unsafe { impls::is_updated_impl() }
+}
+
+#[inline]
+pub fn load() {
+    unsafe { impls::load_impl() }
+}
+
+#[inline]
+pub fn save() {
+    unsafe { impls::save_impl() }
 }

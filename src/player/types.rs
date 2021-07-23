@@ -1,4 +1,4 @@
-use crate::field::SizeT;
+use crate::field::Size;
 use bear_lib_terminal::terminal;
 
 pub use crate::creature::Health;
@@ -18,9 +18,9 @@ bitflags! {
 }
 
 pub struct Data {
-    pub x: SizeT, //< X position
-    pub y: SizeT, //< Y position
-    pub visibility: SizeT, //< On how many cells does player see
+    pub x: Size, //< X position
+    pub y: Size, //< Y position
+    pub visibility: Size, //< On how many cells does player see
     pub health: u8,  //< How many HP does player have
     pub satiety: u8, //< How strong is player's satiety (100 - most, 0 - least)
     pub hunger_counter: u8,
@@ -28,15 +28,15 @@ pub struct Data {
 }
 
 pub struct VisibilityLevel {
-    cur: SizeT,
-    end: SizeT,
-    vis: SizeT,
+    cur: Size,
+    end: Size,
+    vis: Size,
     rev: bool,
     was: bool
 }
 
 impl VisibilityLevel {
-    pub fn new(vis: SizeT, start: SizeT, end: SizeT) -> Self {
+    pub fn new(vis: Size, start: Size, end: Size) -> Self {
         Self {
             cur: start,
             end,
@@ -48,7 +48,7 @@ impl VisibilityLevel {
 }
 
 impl Iterator for VisibilityLevel {
-    type Item = SizeT;
+    type Item = Size;
 
     fn next(&mut self) -> Option <Self::Item> {
         if self.cur == self.end { return None }

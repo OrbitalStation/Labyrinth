@@ -15,10 +15,7 @@ fn main() {
 
         if let Some(event) = terminal::read_event() {
             match event {
-                Event::Close => {
-                    terminal::close();
-                    labyrinth::safe_exit();
-                },
+                Event::Close => labyrinth::safe_exit(),
                 Event::KeyPressed { key, .. } => {
                     terminal::clear(Some(Rect::from_point_values(0, 0, 40, 1)));
                     match key {
@@ -26,6 +23,7 @@ fn main() {
                         KeyCode::Right => player::r#move(Direction::Right),
                         KeyCode::Down  => player::r#move(Direction::Down),
                         KeyCode::Left  => player::r#move(Direction::Left),
+                        KeyCode::Escape => labyrinth::safe_exit(),
                         _ => { }
                     }
                 }

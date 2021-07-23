@@ -3,11 +3,11 @@ use crate::{
     tile::*,
     plant
 };
-use super::types::{Digger, Step, SizeT, DiggerPlant};
+use super::types::{Digger, Step, Size, DiggerPlant};
 use rand::prelude::*;
 
 impl Digger {
-    pub const fn new(x: SizeT, y: SizeT) -> Self {
+    pub const fn new(x: Size, y: Size) -> Self {
         Self { x, y }
     }
 
@@ -19,12 +19,12 @@ impl Digger {
             }
         };
 
-        let x_or = |of: SizeT, to: i8| {
-            if self.x == of { 0 } else { shares_of(field::get((self.x as i16 + to as i16) as SizeT, self.y)) }
+        let x_or = |of: Size, to: i8| {
+            if self.x == of { 0 } else { shares_of(field::get((self.x as i16 + to as i16) as Size, self.y)) }
         };
 
-        let y_or = |of: SizeT, to: i8| {
-            if self.y == of { 0 } else { shares_of(field::get(self.x, (self.y as i16 + to as i16) as SizeT)) }
+        let y_or = |of: Size, to: i8| {
+            if self.y == of { 0 } else { shares_of(field::get(self.x, (self.y as i16 + to as i16) as Size)) }
         };
 
         let up_share = x_or(0, -1);

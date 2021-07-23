@@ -1,7 +1,11 @@
-use super::types::{EffectType, Effect, PlayerEffectsIterator};
+use super::{
+    types::{Effect, PlayerEffectsIterator},
+    EffectType
+};
 use crate::{
     tick::{Tick, Arg},
-    creature::CreatureType
+    creature::CreatureType,
+    field::Size
 };
 
 static mut EFFECTS: Vec <Effect> = Vec::new();
@@ -12,20 +16,10 @@ pub fn effect_check_cb(_: Arg) -> Tick {
         let mut i = 0;
         while i < EFFECTS.len() {
             if EFFECTS[i].duration == 0 {
-                match EFFECTS[i].effect {
-                    EffectType::Poison(_) => { },
-                    EffectType::Blindness(data) => {
-                        EFFECTS[i].obj.set_visibility(data.was_vis);
-                    }
-                }
+                EFFECTS[i].effect.on_finish(&EFFECTS[i].obj);
                 EFFECTS.remove(i);
             } else {
-                match EFFECTS[i].effect {
-                    EffectType::Poison(data) => {
-                        EFFECTS[i].obj.decrease_health(data.power)
-                    },
-                   EffectType::Blindness(_) => { }
-                }
+                EFFECTS[i].effect.on_tick(&EFFECTS[i].obj);
                 EFFECTS[i].duration -= crate::EFFECT_CHECK_IN;
                 i += 1
             }
@@ -34,7 +28,7 @@ pub fn effect_check_cb(_: Arg) -> Tick {
     crate::EFFECT_CHECK_IN
 }
 
-pub unsafe fn add_effect_impl(effect: Effect) {
+pub unsafe fn add_effect_impl(mut effect: Effect) {
     let mut i = 0;
     while i < EFFECTS.len() {
         if EFFECTS[i] == effect {
@@ -43,6 +37,7 @@ pub unsafe fn add_effect_impl(effect: Effect) {
         }
         i += 1
     }
+    effect.effect.on_start(&effect.obj);
     EFFECTS.push(effect);
 }
 
@@ -63,7 +58,7 @@ impl Iterator for PlayerEffectsIterator {
     }
 }
 
-pub fn roman(x: u8) -> &'static str {
+pub fn roman(x: Size) -> &'static str {
     match x {
         1 => "I",
         2 => "II",

@@ -3,7 +3,7 @@ mod impls;
 
 use crate::{
     tick,
-    field::SizeT
+    field::Size
 };
 
 // Public interface
@@ -12,7 +12,8 @@ pub use types::{Direction, Health, Err};
 
 #[inline]
 pub fn init() {
-    tick::add(impls::infinity_satiety_decrease_cb, tick::NULLARG, crate::PLAYER_SATIETY_IN)
+    load();
+    tick::add(impls::state_handler_cb, tick::NULLARG, crate::PLAYER_STATE_HANDLER_IN)
 }
 
 #[inline]
@@ -67,21 +68,31 @@ pub fn absorb_hunger_counter() {
 }
 
 #[inline]
-pub fn is_on(x: SizeT, y: SizeT) -> bool {
+pub fn is_on(x: Size, y: Size) -> bool {
     unsafe { impls::is_on_impl(x, y) }
 }
 
 #[inline]
-pub fn set_visibility(new: u8) {
+pub fn set_visibility(new: Size) {
     unsafe { impls::set_visibility_impl(new) }
 }
 
 #[inline]
-pub fn get_visibility() -> u8 {
+pub fn get_visibility() -> Size {
     unsafe { impls::get_visibility_impl() }
 }
 
 #[inline]
 pub fn is_visibility_updated() -> bool {
     unsafe { impls::is_visibility_updated_impl() }
+}
+
+#[inline]
+pub fn load() {
+    unsafe { impls::load_impl() }
+}
+
+#[inline]
+pub fn save() {
+    unsafe { impls::save_impl() }
 }

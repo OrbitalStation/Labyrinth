@@ -1,7 +1,7 @@
 use bear_lib_terminal::{terminal, geometry};
 use crate::{
     plant,
-    field::SizeT
+    field::Size
 };
 
 #[derive(Copy, Clone, Ord, PartialOrd, Eq, PartialEq)]
@@ -12,7 +12,7 @@ impl TileType {
         Self { 0: x }
     }
 
-    pub fn out(self, p: geometry::Point, x: SizeT, y: SizeT) {
+    pub fn out(self, p: geometry::Point, x: Size, y: Size) {
         match self {
             PLAYER => terminal::print(p, "[color=red]@"),
             EMPTY  => terminal::print(p, "[color=white]."),
@@ -31,7 +31,7 @@ impl TileType {
         }
     }
 
-    pub fn plant_type(self, x: SizeT, y: SizeT) -> Option <plant::Type> {
+    pub fn plant_type(self, x: Size, y: Size) -> Option <plant::Type> {
         match self {
             PLANT => Some(plant::type_by_coords(x, y)),
             _ => None

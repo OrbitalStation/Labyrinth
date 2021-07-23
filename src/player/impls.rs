@@ -3,7 +3,7 @@
 use crate::{
     tile::*,
     tick::{Arg, Tick},
-    field::{self, SizeT},
+    field::{self, Size},
     plant,
     effect
 };
@@ -11,6 +11,7 @@ use super::{
     types::{Data, Flags, VisibilityLevel},
     Direction
 };
+use std::fs::OpenOptions;
 use rand::prelude::*;
 use bear_lib_terminal::{
     terminal,
@@ -31,9 +32,16 @@ static mut DATA: Data = Data {
 
 // Fns
 
-pub fn infinity_satiety_decrease_cb(_: Arg) -> Tick {
-    super::decrease_satiety(1);
-    crate::PLAYER_SATIETY_IN
+pub fn state_handler_cb(_: Arg) -> Tick {
+    if unsafe { DATA.health != crate::PLAYER_MAX_HEALTH } && (unsafe { DATA.satiety } >= crate::PLAYER_MAX_SATIETY / 2) {
+        super::increase_health(1)
+    }
+    if unsafe { DATA.satiety } != 0 {
+        super::decrease_satiety(1);
+    } else {
+        super::decrease_health(1)
+    }
+    crate::PLAYER_STATE_HANDLER_IN
 }
 
 pub unsafe fn interact(obj: TileType) {
@@ -117,7 +125,7 @@ pub unsafe fn show_visible_area_impl() {
             if x < 0 || x >= field::width() as i16 || y < 0 || y >= field::height() as i16 {
                 terminal::print(p, "[color=yellow]*");
             } else {
-                field::get(x as SizeT, y as SizeT).out(p, x as SizeT, y as SizeT)
+                field::get(x as Size, y as Size).out(p, x as Size, y as Size)
             }
         }
         if level == DATA.visibility - 1 && !reverse {
@@ -130,9 +138,6 @@ pub unsafe fn check_impl() {
     if DATA.hunger_counter >= crate::PLAYER_SATIETY_COUNT {
         if DATA.satiety != 0 { DATA.satiety -= 1 }
         DATA.hunger_counter = 0
-    }
-    if DATA.satiety == 0 {
-        DATA.health -= 1;
     }
 }
 
@@ -190,21 +195,50 @@ pub unsafe fn absorb_hunger_counter_impl() {
     DATA.hunger_counter = 0
 }
 
-pub unsafe fn is_on_impl(x: SizeT, y: SizeT) -> bool {
+pub unsafe fn is_on_impl(x: Size, y: Size) -> bool {
     DATA.x == x && DATA.y == y
 }
 
-pub unsafe fn set_visibility_impl(new: u8) {
+pub unsafe fn set_visibility_impl(new: Size) {
     DATA.flags.insert(Flags::VISIBILITY_CHANGED);
     DATA.visibility = new
 }
 
 #[inline]
-pub unsafe fn get_visibility_impl() -> u8 {
+pub unsafe fn get_visibility_impl() -> Size {
     DATA.visibility
 }
 
 #[inline]
 pub unsafe fn is_visibility_updated_impl() -> bool {
     DATA.flags.contains(Flags::VISIBILITY_CHANGED)
+}
+
+pub unsafe fn load_impl() {
+    if DATA.x != 0 { return }
+
+    let mut file = match OpenOptions::new().read(true).open(crate::PLAYER_PATH) {
+        Ok(file) => file,
+        Err(_) => {
+            generate_position_impl();
+            return
+        }
+    };
+
+    DATA.x = crate::read_u16(&mut file, crate::PLAYER_PATH);
+    DATA.y = crate::read_u16(&mut file, crate::PLAYER_PATH);
+    DATA.visibility = crate::read_u16(&mut file, crate::PLAYER_PATH);
+    DATA.health = crate::read_u8(&mut file, crate::PLAYER_PATH);
+    DATA.satiety = crate::read_u8(&mut file, crate::PLAYER_PATH);
+    DATA.hunger_counter = crate::read_u8(&mut file, crate::PLAYER_PATH);
+}
+
+pub unsafe fn save_impl() {
+    let mut file = crate::open_w(crate::PLAYER_PATH);
+    crate::write_u16(&mut file, crate::PLAYER_PATH, DATA.x);
+    crate::write_u16(&mut file, crate::PLAYER_PATH, DATA.y);
+    crate::write_u16(&mut file, crate::PLAYER_PATH, DATA.visibility);
+    crate::write_u8(&mut file, crate::PLAYER_PATH, DATA.health);
+    crate::write_u8(&mut file, crate::PLAYER_PATH, DATA.satiety);
+    crate::write_u8(&mut file, crate::PLAYER_PATH, DATA.hunger_counter);
 }

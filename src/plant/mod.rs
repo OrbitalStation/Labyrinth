@@ -2,8 +2,8 @@ mod types;
 mod impls;
 
 use crate::{
-    field::SizeT,
-    effect::{EffectType, EffectWithDuration, PoisonEffect, BlindnessEffect}
+    field::Size,
+    effect::{EffectType, EffectWithDuration, PoisonEffect, BlindnessEffect, SaturationEffect}
 };
 
 macro_rules! impls {
@@ -49,19 +49,33 @@ macro_rules! impls {
 
 pub use types::Type;
 
+pub fn init() {
+    load()
+}
+
 #[inline]
-pub fn add(x: SizeT, y: SizeT, ty: Type) {
+pub fn add(x: Size, y: Size, ty: Type) {
     unsafe { impls::add_impl(x, y, ty) }
 }
 
 #[inline]
-pub fn eat(x: SizeT, y: SizeT) {
+pub fn eat(x: Size, y: Size) {
     unsafe { impls::eat_impl(x, y) }
 }
 
 #[inline]
-pub fn type_by_coords(x: SizeT, y: SizeT) -> Type {
+pub fn type_by_coords(x: Size, y: Size) -> Type {
     unsafe { impls::type_by_coords_impl(x, y) }
+}
+
+#[inline]
+pub fn load() {
+    unsafe { impls::load_impl() }
+}
+
+#[inline]
+pub fn save() {
+    unsafe { impls::save_impl() }
 }
 
 // Plants
@@ -70,12 +84,16 @@ impls! {
     Blackberry where {
         Reappearance = 5,
         Eat To Explore = 10,
-        Min By Digger = 10,
-        Max By Digger = 20,
+        Min By Digger = 30,
+        Max By Digger = 100,
         Digger Coefficient = 1,
         Output = { symbol: 'b', color: "light blue" },
         Clustering = 0,
-        Effects = { },
+        Effects = {
+            EffectWithDuration::new(EffectType::Saturation(SaturationEffect {
+                power: 1
+            }), 1),
+        },
     }
 }
 
@@ -83,14 +101,19 @@ impls! {
     Belladonna where {
         Reappearance = 5,
         Eat To Explore = 10,
-        Min By Digger = 10,
-        Max By Digger = 20,
+        Min By Digger = 30,
+        Max By Digger = 100,
         Digger Coefficient = 1,
         Output = { symbol: 'b', color: "light red" },
         Clustering = 5, //< 0 - the most, higher - less
         Effects = {
-            EffectWithDuration::new(EffectType::Blindness(BlindnessEffect::new(1)), 3),
-            EffectWithDuration::new(EffectType::Poison(PoisonEffect::new(1)), 3),
+            EffectWithDuration::new(EffectType::Blindness(BlindnessEffect {
+                was_vis: 0,
+                current: 1
+            }), 3),
+            EffectWithDuration::new(EffectType::Poison(PoisonEffect {
+                power: 1
+            }), 3),
         },
     }
 }

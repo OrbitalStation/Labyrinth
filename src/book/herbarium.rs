@@ -40,16 +40,8 @@ impl HerbariumBook {
     }
 
     fn load_from_file(&mut self, file: &mut File) {
-        let mut read_to_buf = || -> u8 {
-            let mut buf = [0];
-            if let Err(err) = file.read_exact(buf.as_mut_slice()) {
-                panic!("Error while reading {} content:\n\t{}", crate::BOOK_HERBARIUM_PATH, err)
-            }
-            buf[0]
-        };
-
-        let n_plants = read_to_buf();
-        let data_size = read_to_buf();
+        let n_plants = crate::read_u8(file, crate::BOOK_HERBARIUM_PATH);
+        let data_size = crate::read_u8(file, crate::BOOK_HERBARIUM_PATH);
 
         if (data_size > size_of::<ActionsToReach>() as u8) || (n_plants > self.plants.len() as u8) {
             panic!("Using old version for recognizing content of {}, which version is newer", crate::BOOK_HERBARIUM_PATH)
@@ -62,7 +54,7 @@ impl HerbariumBook {
             let mut ptr = (&mut self.plants[i as usize]) as *mut ActionsToReach as *mut u8;
             let mut j = 0;
             while j < data_size {
-                unsafe { *ptr = read_to_buf() }
+                unsafe { *ptr = crate::read_u8(file, crate::BOOK_HERBARIUM_PATH) }
                 ptr = (ptr as usize + 1) as *mut u8;
                 j += 1
             }
@@ -71,28 +63,20 @@ impl HerbariumBook {
     }
 
     fn save_to_file(&self, file: &mut File) {
-        let mut write_buf = |buf: &[u8]| {
-            if let Err(err) = file.write_all(buf) {
-                panic!("Error while saving herbarium data:\n\t{}", err)
-            }
-        };
+        let buf = [self.plants.len() as u8, size_of::<ActionsToReach>() as u8];
+        crate::write_bytes(file, crate::BOOK_HERBARIUM_PATH, buf.as_slice());
 
-        let mut buf = [self.plants.len() as u8];
-
-        write_buf(buf.as_slice());
-        buf[0] = size_of::<ActionsToReach>() as u8;
-        write_buf(buf.as_slice());
         let mut buf = [0u8; size_of::<ActionsToReach>()];
         let mut i = 0;
         while i < self.plants.len() {
-            let mut ptr = (&self.plants[i as usize]) as *const ActionsToReach as *const u8;
+            let mut ptr = (&self.plants[i]) as *const ActionsToReach as *const u8;
             let mut j = 0;
             while j < size_of::<ActionsToReach>() {
                 unsafe { buf[j] = *ptr }
                 ptr = (ptr as usize + 1) as *const u8;
                 j += 1
             }
-            write_buf(buf.as_slice());
+            crate::write_bytes(file, crate::BOOK_HERBARIUM_PATH, buf.as_slice());
             i += 1
         }
     }

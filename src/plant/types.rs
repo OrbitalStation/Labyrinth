@@ -1,5 +1,5 @@
 use crate::{
-    field::SizeT,
+    field::Size,
     tick::Tick,
     effect::EffectWithDuration
 };
@@ -111,15 +111,15 @@ impl Iterator for PoisonIterator {
 
 #[derive(Copy, Clone)]
 pub struct Data {
-    pub x: SizeT,
-    pub y: SizeT,
+    pub x: Size,
+    pub y: Size,
     pub ty: Type
 }
 
 impl crate::Findable for Data {
     #[inline(always)]
-    fn x(&self) -> SizeT { self.x }
+    fn x(&self) -> Size { self.x }
 
     #[inline(always)]
-    fn y(&self) -> SizeT { self.y }
+    fn y(&self) -> Size { self.y }
 }
